@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Library</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Book Library</h1>
+
+        <section class="add-book-section">
+            <h2>Add a New Book</h2>
+            <form id="bookForm">
+                <input type="text" id="title" placeholder="Book Title" required>
+                <input type="text" id="author" placeholder="Author" required>
+                <input type="number" id="year" placeholder="Year" min="1000" max="2099" required>
+                <button type="submit">Add Book</button>
+            </form>
+            <p id="formMessage"></p>
+        </section>
+
+        <section class="books-section">
+            <h2>Books List</h2>
+            <div id="booksList" class="books-container">
+                <p>Loading books...</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBooks();
+        });
+
+        document.getElementById('bookForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await addBook();
+        });
+
+        async function loadBooks() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api.php?action=getBooks`);
+                const data = await response.json();
+
+                const booksList = document.getElementById('booksList');
+                if (data.success && data.books.length > 0) {
+                    booksList.innerHTML = data.books.map(book => `
+                        <div class="book-card">
+                            <h3>${book.title}</h3>
+                            <p><strong>Author:</strong> ${book.author}</p>
+                            <p><strong>Year:</strong> ${book.year}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    booksList.innerHTML = '<p>No books in the library yet.</p>';
+                }
+            } catch (error) {
+                document.getElementById('booksList').innerHTML = '<p style="color: red;">Error loading books.</p>';
+                console.error('Error:', error);
+            }
+        }
+
+        async function addBook() {
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const year = document.getElementById('year').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api.php?action=addBook`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, author, year })
+                });
+
+                const data = await response.json();
+                const messageEl = document.getElementById('formMessage');
+
+                if (data.success) {
+                    messageEl.textContent = 'Book added successfully!';
+                    messageEl.style.color = 'green';
+                    document.getElementById('bookForm').reset();
+                    loadBooks();
+                } else {
+                    messageEl.textContent = 'Error: ' + data.message;
+                    messageEl.style.color = 'red';
+                }
+            } catch (error) {
+                document.getElementById('formMessage').textContent = 'Error adding book.';
+                document.getElementById('formMessage').style.color = 'red';
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

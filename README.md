@@ -1,7 +1,8 @@
 # Уеб приложение "Библиотека" (Book Library)
 
 Семпло и леко уеб приложение за управление на библиотека с книги. Изградено е с PHP (бекенд), HTML/CSS (фронтенд) и MySQL (база данни). Проектът е напълно контейнеризиран с Docker.
-
+* **Frontend Image:** [vesko03/book-library-frontend](https://hub.docker.com/r/vesko03/book-library-frontend)
+* **Backend Image:** [vesko03/book-library-backend](https://hub.docker.com/r/vesko03/book-library-backend)
 ## Структура на проекта
 ```
 Book-Library/ 

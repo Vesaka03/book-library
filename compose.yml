@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: book-library-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - book-library-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: book-library-backend
+    ports:
+      - "8000:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: book_library
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+    depends_on:
+      - db
+    networks:
+      - book-library-network
+    restart: unless-stopped
+
+  db:
+    image: mysql:latest
+    platform: linux/amd64
+    container_name: book-library-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: book_library
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db-data:/var/lib/mysql
+    networks:
+      - book-library-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
+
+networks:
+  book-library-network:
+    driver: bridge
